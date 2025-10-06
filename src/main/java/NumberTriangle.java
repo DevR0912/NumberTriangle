@@ -1,4 +1,6 @@
 import java.io.*;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * This is the provided NumberTriangle class to be used in this coding task.
@@ -88,8 +90,15 @@ public class NumberTriangle {
      *
      */
     public int retrieve(String path) {
-        // TODO implement this method
-        return -1;
+        NumberTriangle current = this; // start from this node
+        for (char ch : path.toCharArray()) {
+            if (ch == 'l') {
+                current = current.left;
+            } else if (ch == 'r') {
+                current = current.right;
+            }
+        }
+        return current.root;
     }
 
     /** Read in the NumberTriangle structure from a file.
@@ -104,31 +113,32 @@ public class NumberTriangle {
      * @throws IOException may naturally occur if an issue reading the file occurs
      */
     public static NumberTriangle loadTriangle(String fname) throws IOException {
-        // open the file and get a BufferedReader object whose methods
-        // are more convenient to work with when reading the file contents.
         InputStream inputStream = NumberTriangle.class.getClassLoader().getResourceAsStream(fname);
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
+        List<List<NumberTriangle>> rows = new ArrayList<>();
+        String line;
 
-        // TODO define any variables that you want to use to store things
-
-        // will need to return the top of the NumberTriangle,
-        // so might want a variable for that.
-        NumberTriangle top = null;
-
-        String line = br.readLine();
-        while (line != null) {
-
-            // remove when done; this line is included so running starter code prints the contents of the file
-            System.out.println(line);
-
-            // TODO process the line
-
-            //read the next line
-            line = br.readLine();
+        while ((line = br.readLine()) != null) {
+            String[] nums = line.trim().split("\\s+"); // split by spaces
+            List<NumberTriangle> row = new ArrayList<>();
+            for (String num : nums) {
+                row.add(new NumberTriangle(Integer.parseInt(num)));
+            }
+            rows.add(row);
         }
         br.close();
-        return top;
+
+        for (int i = 0; i < rows.size() - 1; i++) {
+            List<NumberTriangle> currentRow = rows.get(i);
+            List<NumberTriangle> nextRow = rows.get(i + 1);
+            for (int j = 0; j < currentRow.size(); j++) {
+                currentRow.get(j).setLeft(nextRow.get(j));
+                currentRow.get(j).setRight(nextRow.get(j + 1));
+            }
+        }
+
+        return rows.get(0).get(0);
     }
 
     public static void main(String[] args) throws IOException {
